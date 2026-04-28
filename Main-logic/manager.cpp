@@ -1,15 +1,13 @@
 #include "manager.h"
-#include "container.h"
+#include "pseudopicture.h"
 
 #include <QDateTime>
-#include <vector>
-#include <list>
-#include <deque>
 
 Manager::Manager(QObject *parent)
     : QObject(parent)
     , running(false)
     , logSender(nullptr)
+    , globalCounter(0)
 {
     timeoutTimer = new QTimer(this);
     timeoutTimer->setSingleShot(true);
@@ -26,21 +24,11 @@ void Manager::setLogSender(LogSender *sender)
     logSender = sender;
 }
 
-void Manager::onStartReceived(const QString &containerType, int N, int M, int NWrite, int NRead, int T1, int T2)
+void Manager::onStartReceived(const QString &containerType, int N, int M, int NWrite, int NRead, int T1, int T2, const QString &dataType)
 {
-    if (running) onStopReceived();
-
-    if (containerType == "std::vector")
+    if (running)
     {
-        container = std::make_unique<Container<std::vector<PseudoPicture>>>();
-    }
-    else if (containerType == "std::list")
-    {
-        container = std::make_unique<Container<std::list<PseudoPicture>>>();
-    }
-    else
-    {
-        container = std::make_unique<Container<std::deque<PseudoPicture>>>();
+        onStopReceived();
     }
 
     running = true;
@@ -52,26 +40,22 @@ void Manager::onStartReceived(const QString &containerType, int N, int M, int NW
         logSender->sendLog("[СТАРТ] Процесс запущен в " + QDateTime::currentDateTime().toString("hh:mm:ss.zzz"));
     }
 
-    for (int i = 0; i < NWrite; i++)
+    if (dataType == "PseudoPicture")
     {
-        WriteThread *writer = new WriteThread(i + 1, container.get(), &mutex, &cond, N, T1, T2, &running, &timer);
-        connect(writer, &WriteThread::logMessage, logSender, &LogSender::sendLog);
-        writers.append(writer);
-        writer->start();
+        startAlgorithm<PseudoPicture>(containerType, N, M, NWrite, NRead, T1, T2);
     }
-
-    for (int i = 0; i < NRead; i++)
+    else
     {
-        ReadThread *reader = new ReadThread(i + 1, container.get(), &mutex, &cond, M, T1, &running, &timer);
-        connect(reader, &ReadThread::logMessage, logSender, &LogSender::sendLog);
-        readers.append(reader);
-        reader->start();
+        startAlgorithm<int>(containerType, N, M, NWrite, NRead, T1, T2);
     }
 }
 
 void Manager::onStopReceived()
 {
-    if (!running) return;
+    if (!running)
+    {
+        return;
+    }
 
     if (logSender)
     {
@@ -79,6 +63,7 @@ void Manager::onStopReceived()
     }
 
     stopAllThreads();
+    globalCounter = 0;
 }
 
 void Manager::onTimeout()
@@ -91,19 +76,12 @@ void Manager::stopAllThreads()
     running = false;
     cond.wakeAll();
 
-    for (WriteThread *writer : writers)
+    for (QThread *thread : threads)
     {
-        writer->wait();
-        delete writer;
+        thread->wait();
+        delete thread;
     }
-    writers.clear();
-
-    for (ReadThread *reader : readers)
-    {
-        reader->wait();
-        delete reader;
-    }
-    readers.clear();
+    threads.clear();
 
     timeoutTimer->stop();
 }

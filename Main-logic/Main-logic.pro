@@ -15,24 +15,22 @@ INCLUDEPATH += /usr/include/x86_64-linux-gnu
 INCLUDEPATH += /usr/include
 
 SOURCES += \
-        commandreceiver.cpp \
-        logsender.cpp \
-        main.cpp \
-        manager.cpp \
-        pseudopicture.cpp \
-        readthread.cpp \
-        writethread.cpp
+    main.cpp \
+    commandreceiver.cpp \
+    manager.cpp \
+    logsender.cpp \
+    pseudopicture.cpp
+
+HEADERS += \
+    commandreceiver.h \
+    icontainer.h \
+    container.h \
+    manager.h \
+    writethread.h \
+    readthread.h \
+    logsender.h \
+    pseudopicture.h
 
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
-
-HEADERS += \
-    commandreceiver.h \
-    container.h \
-    icontainer.h \
-    logsender.h \
-    manager.h \
-    pseudopicture.h \
-    readthread.h \
-    writethread.h

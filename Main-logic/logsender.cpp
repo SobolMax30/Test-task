@@ -1,11 +1,17 @@
 #include "logsender.h"
 
+#include <QTimer>
+
 LogSender::LogSender(QObject *parent)
     : QObject(parent)
     , server(new QTcpServer(this))
     , client(nullptr)
 {
     connect(server, &QTcpServer::newConnection, this, &LogSender::onNewConnection);
+
+    QTimer *queueTimer = new QTimer(this);
+    connect(queueTimer, &QTimer::timeout, this, &LogSender::processQueue);
+    queueTimer->start(100);
 }
 
 LogSender::~LogSender()
@@ -30,11 +36,9 @@ void LogSender::stopServer()
 
 void LogSender::sendLog(const QString &message)
 {
-    if (client && client->state() == QAbstractSocket::ConnectedState)
-    {
-        client->write(message.toUtf8());
-        client->write("\n");
-    }
+    queueMutex.lock();
+    messageQueue.append(message);
+    queueMutex.unlock();
 }
 
 void LogSender::onNewConnection()
@@ -46,4 +50,24 @@ void LogSender::onNewConnection()
 void LogSender::onClientDisconnected()
 {
     client = nullptr;
+}
+
+void LogSender::processQueue()
+{
+    if (!client || client->state() != QAbstractSocket::ConnectedState)
+    {
+        return;
+    }
+
+    queueMutex.lock();
+    QStringList messages = messageQueue;
+    messageQueue.clear();
+    queueMutex.unlock();
+
+    for (const QString &msg : messages)
+    {
+        client->write(msg.toUtf8());
+        client->write("\n");
+    }
+    client->flush();
 }

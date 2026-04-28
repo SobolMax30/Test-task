@@ -4,15 +4,12 @@
 #include <QDateTime>
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent)
-    , ui(new Ui::MainWindow)
+    : QMainWindow(parent), ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-
     tcpSocket = new QTcpSocket(this);
     logModel = new QStringListModel(this);
     ui->logListView->setModel(logModel);
-
     ui->btnDisconnect->setEnabled(false);
 
     connect(tcpSocket, &QTcpSocket::connected, this, &MainWindow::onSocketConnected);
@@ -20,20 +17,18 @@ MainWindow::MainWindow(QWidget *parent)
     connect(tcpSocket, &QTcpSocket::readyRead, this, &MainWindow::onSocketReadyRead);
 }
 
-MainWindow::~MainWindow()
-{
-    delete ui;
-}
+MainWindow::~MainWindow() { delete ui; }
 
 void MainWindow::on_btnConnect_clicked()
 {
     tcpSocket->connectToHost("127.0.0.1", 12345);
+    if (!tcpSocket->waitForConnected(3000))
+    {
+        addLogLine("Не удалось подключиться к серверу");
+    }
 }
 
-void MainWindow::on_btnDisconnect_clicked()
-{
-    tcpSocket->disconnectFromHost();
-}
+void MainWindow::on_btnDisconnect_clicked() { tcpSocket->disconnectFromHost(); }
 
 void MainWindow::on_btnClear_clicked()
 {
@@ -59,17 +54,17 @@ void MainWindow::onSocketReadyRead()
 {
     while (tcpSocket->canReadLine())
     {
-        QString receivedLine = QString::fromUtf8(tcpSocket->readLine()).trimmed();
-        if (!receivedLine.isEmpty())
+        QString line = QString::fromUtf8(tcpSocket->readLine()).trimmed();
+        if (!line.isEmpty())
         {
-            addLogLine(receivedLine);
+            addLogLine(line);
         }
     }
 }
 
 void MainWindow::addLogLine(QString text)
 {
-    QString timestamp = QDateTime::currentDateTime().toString("hh:mm:ss.zzz");
-    logLines.append("[" + timestamp + "] " + text);
+    QString ts = QDateTime::currentDateTime().toString("hh:mm:ss.zzz");
+    logLines.append("[" + ts + "] " + text);
     logModel->setStringList(logLines);
 }

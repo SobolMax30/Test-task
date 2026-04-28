@@ -13,7 +13,7 @@ public:
     ~CommandReceiver();
 
 signals:
-    void startReceived(const QString &containerType, int N, int M, int NWrite, int NRead, int T1, int T2);
+    void startReceived(const QString &containerType, int N, int M, int NWrite, int NRead, int T1, int T2, const QString &dataType);
     void stopReceived();
 
 private slots:

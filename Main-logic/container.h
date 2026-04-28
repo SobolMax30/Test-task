@@ -4,35 +4,46 @@
 #include "icontainer.h"
 
 #include <cstddef>
+#include <vector>
 
-template <class ContainerType>
-class Container : public IContainer
+template <class ContainerType, class T>
+class Container : public IContainer<T>
 {
 public:
-    void push(const PseudoPicture &item) override
+    void push(const T &item) override
     {
-        storage.push_back(item);
+        container.push_back(item);
     }
 
-    PseudoPicture pop() override
+    T pop() override
     {
-        PseudoPicture lastItem = storage.back();
-        storage.pop_back();
+        T lastItem = container.back();
+        container.pop_back();
         return lastItem;
     }
 
     std::size_t size() const override
     {
-        return storage.size();
+        return container.size();
     }
 
     bool empty() const override
     {
-        return storage.empty();
+        return container.empty();
+    }
+
+    std::vector<T> getContents() const override
+    {
+        std::vector<T> result;
+        for (const T &item : container)
+        {
+            result.push_back(item);
+        }
+        return result;
     }
 
 private:
-    ContainerType storage;
+    ContainerType container;
 };
 
 #endif // CONTAINER_H

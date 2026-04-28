@@ -12,7 +12,6 @@ QT_END_NAMESPACE
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
-
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
@@ -21,7 +20,6 @@ private slots:
     void on_btnConnect_clicked();
     void on_btnDisconnect_clicked();
     void on_btnClear_clicked();
-
     void onSocketConnected();
     void onSocketDisconnected();
     void onSocketReadyRead();
@@ -35,4 +33,4 @@ private:
     void addLogLine(QString text);
 };
 
-#endif // MAINWINDOW_H
+#endif

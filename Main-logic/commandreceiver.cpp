@@ -42,16 +42,18 @@ void CommandReceiver::processDatagram(const QByteArray &data)
     }
 
     QStringList parts = message.split(';');
-    if (parts.size() == 8 && parts[0] == "START")
+
+    if (parts.size() == 9 && parts[0] == "START")
     {
-        QString typeC = parts[1];
+        QString containerType = parts[1];
         int N = parts[2].toInt();
         int M = parts[3].toInt();
         int NWrite = parts[4].toInt();
         int NRead = parts[5].toInt();
         int T1 = parts[6].toInt();
         int T2 = parts[7].toInt();
+        QString dataType = parts[8];
 
-        emit startReceived(typeC, N, M, NWrite, NRead, T1, T2);
+        emit startReceived(containerType, N, M, NWrite, NRead, T1, T2, dataType);
     }
 }

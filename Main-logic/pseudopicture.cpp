@@ -1,19 +1,23 @@
 #include "pseudopicture.h"
 
-#include <cstdlib>
-
 PseudoPicture::PseudoPicture()
 {
-    for (int index = 0; index < SIZE; index++)
+    for (int i = 0; i < SIZE; ++i)
     {
-        pictureData[index] = 0;
+        data[i] = 0;
     }
 }
 
-void PseudoPicture::fillRandom()
+PseudoPicture& PseudoPicture::operator=(int value)
 {
-    for (int index = 0; index < SIZE; index++)
+    for (int i = 0; i < SIZE; ++i)
     {
-        pictureData[index] = static_cast<unsigned char>(rand() % 256);
+        data[i] = static_cast<unsigned char>(value);
     }
+    return *this;
+}
+
+PseudoPicture::operator int() const
+{
+    return static_cast<int>(data[0]);
 }

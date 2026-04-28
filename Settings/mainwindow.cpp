@@ -28,6 +28,7 @@ MainWindow::~MainWindow()
 void MainWindow::loadSettings()
 {
     ui->comboBox->setCurrentText(settings->value("typeC", "std::vector").toString());
+    ui->dataTypeComboBox->setCurrentText(settings->value("dataType", "PseudoPicture").toString());
     ui->N_spinBox->setValue(settings->value("N", 10).toInt());
     ui->M_spinBox->setValue(settings->value("M", 5).toInt());
     ui->NWrite_spinBox->setValue(settings->value("NWrite", 2).toInt());
@@ -39,6 +40,7 @@ void MainWindow::loadSettings()
 void MainWindow::saveSettings()
 {
     settings->setValue("typeC", ui->comboBox->currentText());
+    settings->setValue("dataType", ui->dataTypeComboBox->currentText());
     settings->setValue("N", ui->N_spinBox->value());
     settings->setValue("M", ui->M_spinBox->value());
     settings->setValue("NWrite", ui->NWrite_spinBox->value());
@@ -58,14 +60,14 @@ void MainWindow::on_btnStart_clicked()
     ui->btnStop->setEnabled(true);
     saveSettings();
 
-    QString message = QString("START;%1;%2;%3;%4;%5;%6;%7")
-        .arg(ui->comboBox->currentText())
-        .arg(ui->N_spinBox->value())
-        .arg(ui->M_spinBox->value())
-        .arg(ui->NWrite_spinBox->value())
-        .arg(ui->NRead_spinBox->value())
-        .arg(ui->T1_spinBox->value())
-        .arg(ui->T2_spinBox->value());
+    QString message = "START;" + ui->comboBox->currentText() + ";" +
+                      QString::number(ui->N_spinBox->value()) + ";" +
+                      QString::number(ui->M_spinBox->value()) + ";" +
+                      QString::number(ui->NWrite_spinBox->value()) + ";" +
+                      QString::number(ui->NRead_spinBox->value()) + ";" +
+                      QString::number(ui->T1_spinBox->value()) + ";" +
+                      QString::number(ui->T2_spinBox->value()) + ";" +
+                      ui->dataTypeComboBox->currentText();
 
     sendCommand(message.toUtf8());
 }
